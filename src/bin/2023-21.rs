@@ -47,7 +47,7 @@ fn part_one(map: &Vec<Vec<char>>, max_steps: u64) -> u64 {
         .count() as u64
 }
 
-fn part_two(map: &Vec<Vec<char>>) -> u64 {
+fn part_two(_map: &Vec<Vec<char>>) -> u64 {
     0
 }
 
