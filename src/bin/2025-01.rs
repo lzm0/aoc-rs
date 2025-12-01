@@ -1,42 +1,25 @@
 use std::fs;
 
-enum Direction {
-    Left,
-    Right,
-}
-
-struct Rotation {
-    direction: Direction,
-    distance: i16,
-}
-
-fn parse_input(input: &str) -> Vec<Rotation> {
+fn parse(input: &str) -> Vec<i16> {
     input
         .lines()
         .map(|s| {
             let (dir, dist) = s.split_at(1);
-            let direction = match dir {
-                "L" => Direction::Left,
-                "R" => Direction::Right,
+            let distance: i16 = dist.parse().unwrap();
+            match dir {
+                "L" => -distance,
+                "R" => distance,
                 _ => unreachable!(),
-            };
-            let distance = dist.parse().unwrap();
-            Rotation {
-                direction,
-                distance,
             }
         })
         .collect()
 }
 
-fn part_one(start: i16, rotations: &Vec<Rotation>) -> i16 {
+fn part_one(rotations: &[i16]) -> i16 {
     let mut password = 0;
-    let mut position = start;
+    let mut position = 50;
     for rotation in rotations {
-        match rotation.direction {
-            Direction::Left => position = position - rotation.distance,
-            Direction::Right => position = position + rotation.distance,
-        }
+        position += rotation;
         position = position.rem_euclid(100);
         if position == 0 {
             password += 1;
@@ -45,38 +28,38 @@ fn part_one(start: i16, rotations: &Vec<Rotation>) -> i16 {
     password
 }
 
-fn part_two(start: i16, rotations: &Vec<Rotation>) -> i16 {
+fn part_two(rotations: &[i16]) -> i16 {
     let mut password = 0;
-    let mut position = start;
-    for rotation in rotations {
-        let new_position = match rotation.direction {
-            Direction::Left => position - rotation.distance,
-            Direction::Right => position + rotation.distance,
-        };
-        if position != 0 && (new_position < 1 || new_position > 99) {
-            password += 1
+    let mut position = 50;
+    for &rotation in rotations {
+        if rotation >= 0 {
+            password += (position + rotation) / 100;
+        } else {
+            let complement = (100 - position) % 100;
+            password += (complement - rotation) / 100;
         }
-        position = new_position.rem_euclid(100);
+        position += rotation;
+        position = position.rem_euclid(100);
     }
     password
 }
 
 fn main() {
-    let lines: Vec<Rotation> = parse_input(
+    let lines: Vec<i16> = parse(
         fs::read_to_string("src/input/2025-01.txt")
             .unwrap()
             .as_str(),
     );
 
-    println!("{}", part_one(50, &lines));
-    println!("{}", part_two(50, &lines));
+    println!("{}", part_one(&lines));
+    println!("{}", part_two(&lines));
 }
 
 #[test]
 fn test() {
     use indoc::indoc;
 
-    let input = parse_input(indoc! {"
+    let input = parse(indoc! {"
         L68
         L30
         R48
@@ -88,6 +71,6 @@ fn test() {
         R14
         L82
     "});
-    assert_eq!(part_one(50, &input), 3);
-    assert_eq!(part_two(50, &input), 6);
+    assert_eq!(part_one(&input), 3);
+    assert_eq!(part_two(&input), 6);
 }
